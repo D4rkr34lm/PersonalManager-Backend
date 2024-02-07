@@ -2,7 +2,6 @@ import pg from "pg"
 
 interface TaskContainer{
     uuid: string
-    deadlineCap: number 
     tasks: Task[]
 }
 
@@ -25,13 +24,13 @@ async function getData(user: string, client: pg.PoolClient) : Promise<TaskContai
 }
 
 async function getContainers(user: string, client: pg.PoolClient): Promise<TaskContainer[]>{
-    const containerQuery = `SELECT uuid, deadline_cap FROM containers WHERE owner = '${user}'`
+    const containerQuery = `SELECT uuid FROM containers WHERE owner = '${user}'`
 
     const data = await client.query(containerQuery);
     const containers : TaskContainer[] = [];
 
     for(let row of data.rows){
-        const container : TaskContainer = {uuid: row.uuid, deadlineCap: row.deadline_cap, tasks: []};
+        const container : TaskContainer = {uuid: row.uuid, tasks: []};
         containers.push(container);
     }
 
