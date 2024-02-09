@@ -8,13 +8,13 @@ import handleLogin from './auth/login'
 import getData from './data/data'
 
 
-env.config()
+env.config({path: '.env'})
 
 const credentials = {
-    host: process.env.DATABASE_HOST,
-    port: parseInt(process.env.DATABASE_PORT),
-    database: process.env.DATABASE_NAME,
-    user: process.env.DATABASE_USER,
+    host: 'home.local',
+    port: 5432,
+    database: 'pms',
+    user: 'postgres',
     password: process.env.DATABASE_PASSWORD
 }
 
@@ -82,4 +82,4 @@ app.get("/data", (req, res) => {
     }
 });
 
-app.listen(9001, () => console.log("[INF] Server started, listening to port 9000"))
+app.listen(9001, () => console.log("[INF] Server started, listening to port 9001"))
