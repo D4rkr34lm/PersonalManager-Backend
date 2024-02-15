@@ -4,6 +4,8 @@
       "module": "Node16",
       "sourceMap": true,
       "outDir": "build",
-      "esModuleInterop": true
+      "esModuleInterop": true,
+
+      "strictNullChecks": true
     }
 }
