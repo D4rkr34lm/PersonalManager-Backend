@@ -33,6 +33,7 @@ app.post("/login", async (req, res) => {
 
         try{
             const token = await handleLogin(req.body.password, req.body.username, client)
+            client.release()
 
             console.log(`[INF] Auth for ${req.body.username} succeded`)
             res.status(200).send(token)
@@ -41,8 +42,6 @@ app.post("/login", async (req, res) => {
             console.log(`[INF] Auth for ${req.body.username} failed`)
             res.status(401).end()
         }
-
-        client.release()
     }
     else{
         console.log("[WRN] Auth request with incorect payload configuration")
@@ -70,6 +69,7 @@ app.get("/data", (req, res) => {
                 console.log(`[INF] Recived data request for user ${username}`)
                 const client = await pool.connect()
                 const containers = await getData(username, client)
+                client.release()
                 const body = {containers: containers}
 
                 res.status(200).json(body)

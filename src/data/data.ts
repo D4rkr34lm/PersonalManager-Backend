@@ -13,43 +13,52 @@ interface Task{
 }
 
 async function getData(user: string, client: pg.PoolClient) : Promise<TaskContainer[]>{
-    const containers = await getContainers(user, client);
+    const containers = await getContainers(user, client)
 
     for(let container of containers){
-        const tasks = await getTasksOfContainer(container.uuid, client);
-        container.tasks = tasks;
+        const tasks = await getTasksOfContainer(container.uuid, client)
+        container.tasks = tasks
     }
 
-    return containers;
+    return containers
 }
 
 async function getContainers(user: string, client: pg.PoolClient): Promise<TaskContainer[]>{
     const containerQuery = `SELECT uuid FROM containers WHERE owner = '${user}'`
 
     const data = await client.query(containerQuery);
-    const containers : TaskContainer[] = [];
+    const containers : TaskContainer[] = []
 
     for(let row of data.rows){
-        const container : TaskContainer = {uuid: row.uuid, tasks: []};
-        containers.push(container);
+        const container : TaskContainer = {uuid: row.uuid, tasks: []}
+        containers.push(container)
     }
 
-    return containers;
+    return containers
 }
 
 async function getTasksOfContainer(uuid: string, client: pg.PoolClient): Promise<Task[]>{
-    const query = `SELECT uuid, title, type, body FROM tasks WHERE parent = '${uuid}'`;
+    const query = `SELECT uuid, title, type, body, prev FROM tasks WHERE parent = '${uuid}'`
 
-    const data = await client.query(query);
+    const data = await client.query(query)
 
-    let tasks : Task[] = [];
+    let tasks : Task[] = []
 
-    for(let row of data.rows){
-        const task : Task = {uuid: row.uuid, type: row.type, title: row.title, body: row.body};
-        tasks.push(task);
+    if(data.rowCount === 0) return tasks
+
+    let row = data.rows.find(row => row.prev == '0-0-0-0-0')
+    tasks.push(convertRowToTask(row))
+
+    for(let i = 0; i < data.rowCount - 1; i++){
+        row = data.rows.find(next => next.prev == row.uuid)
+        tasks.push(convertRowToTask(row))
     }
 
-    return tasks;
+    return tasks
 }
 
-export default getData;
+function convertRowToTask(row: any) : Task{
+    return {uuid: row.uuid, type: row.type, title: row.title, body: row.body}
+}
+
+export default getData
