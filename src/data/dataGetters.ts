@@ -1,11 +1,11 @@
 import type pg from 'pg'
 
-interface TaskContainer {
+export interface TaskContainer {
   uuid: string
   tasks: Task[]
 }
 
-interface Task {
+export interface Task {
   uuid: string
   type: string
   title: string
