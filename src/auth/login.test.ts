@@ -23,16 +23,16 @@ test('Login: Valid', async () => {
 
 test('Login: password invalid', async () => {
   const client = await pool.connect()
-  await expect(handleLogin('test', 'tes', client)).rejects.toMatch(
-    'Invalid credentials'
+  await expect(handleLogin('test', 'tes', client)).rejects.toThrow(
+    new Error('Invalid credentials')
   )
   client.release()
 })
 
 test('Login: username invalid', async () => {
   const client = await pool.connect()
-  await expect(handleLogin('tes', 'test', client)).rejects.toMatch(
-    'Invalid credentials'
+  await expect(handleLogin('tes', 'test', client)).rejects.toThrow(
+    new Error('Invalid credentials')
   )
   client.release()
 })
