@@ -44,3 +44,7 @@ test('DataGetters: Data order', async () => {
   }
   client.release()
 })
+
+afterAll(async () => {
+  await pool.end()
+})

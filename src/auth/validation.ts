@@ -6,7 +6,7 @@ async function validateOwnership (username: string, taskId: string, client: pg.P
 
   if (res1.rowCount! !== 1) return false
 
-  const containerId = res1.rows[1].parent as string
+  const containerId = res1.rows[0].parent as string
 
   const containerQuery = `SELECT uuid FROM containers WHERE uuid='${containerId}' AND owner='${username}'`
   const res2 = await client.query(containerQuery)

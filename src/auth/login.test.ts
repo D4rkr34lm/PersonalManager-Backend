@@ -36,3 +36,7 @@ test('Login: username invalid', async () => {
   )
   client.release()
 })
+
+afterAll(async () => {
+  await pool.end()
+})
