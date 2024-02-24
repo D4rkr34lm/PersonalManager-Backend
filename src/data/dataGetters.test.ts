@@ -1,6 +1,8 @@
 import pg from 'pg'
 import env from 'dotenv'
+
 import getData from './dataGetters'
+import { removeMockData, createMockData } from '../util/testData'
 
 env.config()
 
@@ -13,6 +15,12 @@ const credentials = {
 }
 
 const pool = new pg.Pool(credentials)
+
+beforeAll(async () => {
+  const client = await pool.connect()
+  await createMockData(client)
+  client.release()
+})
 
 test('DataGetters: Data retrival', async () => {
   const client = await pool.connect()
@@ -46,5 +54,7 @@ test('DataGetters: Data order', async () => {
 })
 
 afterAll(async () => {
-  await pool.end()
+  const client = await pool.connect()
+  await removeMockData(client)
+  client.release()
 })

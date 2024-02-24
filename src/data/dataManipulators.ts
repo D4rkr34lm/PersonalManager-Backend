@@ -6,7 +6,7 @@ async function updateTaskOrder (taskId: string, prevId: string, client: pg.PoolC
   UPDATE tasks 
   SET prev=subquery.prev 
   FROM (SELECT prev FROM tasks WHERE uuid='${taskId}') AS subquery
-  WHERE prev='${taskId}'`
+  WHERE tasks.prev='${taskId}'`
 
   // Alter surounding task for insertion
   const patchInQuery = `

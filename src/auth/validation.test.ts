@@ -2,6 +2,7 @@ import env from 'dotenv'
 import pg from 'pg'
 
 import { validateOwnership } from './validation'
+import { removeMockData, createMockData, mockTasks } from '../util/testData'
 
 env.config()
 
@@ -15,18 +16,26 @@ const credentials = {
 
 const pool = new pg.Pool(credentials)
 
+beforeAll(async () => {
+  const client = await pool.connect()
+  await createMockData(client)
+  client.release()
+})
+
 test('Validation: unowned task', async () => {
   const client = await pool.connect()
-  await expect(validateOwnership('qs', '0-0-0-0-0', client)).resolves.toEqual(false)
+  await expect(validateOwnership('test', '0-0-0-0-0', client)).resolves.toEqual(false)
   client.release()
 })
 
 test('Validation: owned task', async () => {
   const client = await pool.connect()
-  await expect(validateOwnership('test', 'af1c1fe6-d669-414e-b066-e9733f0de7a8', client)).resolves.toEqual(true)
+  await expect(validateOwnership('test', mockTasks[0][0], client)).resolves.toEqual(true)
   client.release()
 })
 
 afterAll(async () => {
-  await pool.end()
+  const client = await pool.connect()
+  await removeMockData(client)
+  client.release()
 })
