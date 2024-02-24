@@ -2,7 +2,7 @@ import pg from 'pg'
 import env from 'dotenv'
 
 import getData from './dataGetters'
-import { updateTaskOrder } from './dataManipulators'
+import { updateTaskOrder, updateTaskOwnership } from './dataManipulators'
 import { removeMockData, createMockData } from '../util/testData'
 
 env.config()
@@ -59,15 +59,11 @@ test('DataManipulators: Data order change (Move to start)', async () => {
   const containers = await getData('test', client)
   const container = containers[0]
 
-  const order: string[] = []
-
-  for (const task of container.tasks) {
-    order.push(task.uuid)
-  }
+  const order: string[] = container.tasks.map(task => task.uuid)
 
   const last = container.tasks[container.tasks.length - 1].uuid
 
-  await updateTaskOrder(last, '0-0-0-0-0', client)
+  await updateTaskOrder(last, container.uuid, client)
 
   order.splice(0, 0, last)
   order.pop()
@@ -80,6 +76,21 @@ test('DataManipulators: Data order change (Move to start)', async () => {
   }
 
   client.release()
+})
+
+test('DataManipulators: Data ownership change', async () => {
+  const client = await pool.connect()
+  const containers = await getData('test', client)
+
+  const moveTaskId = containers[1].tasks[0].uuid
+
+  await updateTaskOwnership(moveTaskId, containers[2].uuid, client)
+  await updateTaskOrder(moveTaskId, containers[2].uuid, client)
+
+  const containersAfter = await getData('test', client)
+
+  expect(containersAfter[2].tasks.length).toBe(1)
+  expect(containersAfter[2].tasks[0].uuid).toBe(moveTaskId)
 })
 
 afterAll(async () => {

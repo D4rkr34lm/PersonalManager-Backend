@@ -55,7 +55,7 @@ async function getTasksOfContainer (
 
   if (data.rowCount === 0) return tasks
 
-  let row = data.rows.find((row) => row.prev === '0-0-0-0-0')
+  let row = data.rows.find((row) => row.prev === uuid)
   tasks.push(convertRowToTask(row))
 
   for (let i = 0; i < data.rowCount! - 1; i++) {

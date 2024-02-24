@@ -43,7 +43,7 @@ test('DataGetters: Data order', async () => {
   for (const container of containers) {
     for (let i = 0; i < container.tasks.length; i++) {
       const uuid = container.tasks[i].uuid
-      const prev = i === 0 ? '0-0-0-0-0' : container.tasks[i - 1].uuid
+      const prev = i === 0 ? container.uuid : container.tasks[i - 1].uuid
 
       const entry = data.rows.find(row => row.uuid === uuid)
       expect(entry).toBeDefined()

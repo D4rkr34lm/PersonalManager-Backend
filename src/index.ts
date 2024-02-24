@@ -7,7 +7,7 @@ import jwt, { type JwtPayload } from 'jsonwebtoken'
 import handleLogin from './auth/login'
 import getData from './data/dataGetters'
 import { validateTaskOwnership, validateContainerOwnership } from './auth/validation'
-import { updateTaskOrder } from './data/dataManipulators'
+import { updateTaskOrder, updateTaskOwnership } from './data/dataManipulators'
 
 env.config({ path: '.env' })
 
@@ -108,12 +108,39 @@ app.post('/data/alter/task/order', async (req, res) => {
   const prevOwnership = await validateTaskOwnership(username, prevId, client)
 
   if (!taskOwnership || !prevOwnership) {
-    console.log(`[ERR] User ${username} is not allowed to alter order of ${taskId} or ${prevId}`)
+    console.log(`[ERR] User ${username} does not own Task:${taskId} or Task:${prevId}`)
     res.status(403).end()
     return
   }
 
   await updateTaskOrder(taskId, prevId, client)
+  client.release()
+})
+
+app.post('/data/alter/task/ownership', async (req, res) => {
+  const username = res.locals.username as string
+  console.log(`[INF] Recived task order ownership request for user ${username}`)
+  const client = await pool.connect()
+
+  const taskId = req.body.taskId as string | undefined
+  const containerId = req.body.containerId as string | undefined
+
+  if (taskId === undefined || containerId === undefined) {
+    console.log('[ERR] Faulty task order alteration request')
+    res.status(400).end()
+    return
+  }
+
+  const taskOwnership = await validateTaskOwnership(username, taskId, client)
+  const containerOwnership = await validateContainerOwnership(username, containerId, client)
+
+  if (!taskOwnership || !containerOwnership) {
+    console.log(`[ERR] User ${username} does not own Task:${taskId} or Container:${containerId}`)
+    res.status(403).end()
+    return
+  }
+
+  await updateTaskOwnership(taskId, containerId, client)
   client.release()
 })
 
