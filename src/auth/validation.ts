@@ -1,6 +1,6 @@
 import type pg from 'pg'
 
-async function validateOwnership (username: string, taskId: string, client: pg.PoolClient): Promise<boolean> {
+async function validateTaskOwnership (username: string, taskId: string, client: pg.PoolClient): Promise<boolean> {
   const taskQuery = `SELECT parent FROM tasks WHERE uuid='${taskId}'`
   const res1 = await client.query(taskQuery)
 
@@ -14,4 +14,12 @@ async function validateOwnership (username: string, taskId: string, client: pg.P
   return res2.rowCount! === 1
 }
 
-export { validateOwnership }
+async function validateContainerOwnership (username: string, containerId: string, client: pg.PoolClient): Promise<boolean> {
+  const containerQuery = `SELECT uuid FROM containers WHERE uuid='${containerId}'`
+
+  const res = await client.query(containerQuery)
+
+  return res.rowCount === 1
+}
+
+export { validateTaskOwnership, validateContainerOwnership }

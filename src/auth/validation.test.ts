@@ -1,8 +1,8 @@
 import env from 'dotenv'
 import pg from 'pg'
 
-import { validateOwnership } from './validation'
-import { removeMockData, createMockData, mockTasks } from '../util/testData'
+import { validateContainerOwnership, validateTaskOwnership } from './validation'
+import { removeMockData, createMockData, mockTasks, mockContainer } from '../util/testData'
 
 env.config()
 
@@ -24,13 +24,25 @@ beforeAll(async () => {
 
 test('Validation: unowned task', async () => {
   const client = await pool.connect()
-  await expect(validateOwnership('test', '0-0-0-0-0', client)).resolves.toEqual(false)
+  await expect(validateTaskOwnership('test', '0-0-0-0-0', client)).resolves.toEqual(false)
   client.release()
 })
 
 test('Validation: owned task', async () => {
   const client = await pool.connect()
-  await expect(validateOwnership('test', mockTasks[0][0], client)).resolves.toEqual(true)
+  await expect(validateTaskOwnership('test', mockTasks[0][0], client)).resolves.toEqual(true)
+  client.release()
+})
+
+test('Validation: owned container', async () => {
+  const client = await pool.connect()
+  await expect(validateContainerOwnership(mockContainer[0][1], mockContainer[0][0], client)).resolves.toEqual(true)
+  client.release()
+})
+
+test('Validation: unowned container', async () => {
+  const client = await pool.connect()
+  await expect(validateContainerOwnership('notTest', mockContainer[0][0], client)).resolves.toEqual(true)
   client.release()
 })
 

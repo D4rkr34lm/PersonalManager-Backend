@@ -6,7 +6,7 @@ import jwt, { type JwtPayload } from 'jsonwebtoken'
 
 import handleLogin from './auth/login'
 import getData from './data/dataGetters'
-import { validateOwnership } from './auth/validation'
+import { validateTaskOwnership, validateContainerOwnership } from './auth/validation'
 import { updateTaskOrder } from './data/dataManipulators'
 
 env.config({ path: '.env' })
@@ -104,8 +104,8 @@ app.post('/data/alter/task/order', async (req, res) => {
     res.status(400).end()
     return
   }
-  const taskOwnership = await validateOwnership(username, taskId, client)
-  const prevOwnership = await validateOwnership(username, prevId, client)
+  const taskOwnership = await validateTaskOwnership(username, taskId, client)
+  const prevOwnership = await validateTaskOwnership(username, prevId, client)
 
   if (!taskOwnership || !prevOwnership) {
     console.log(`[ERR] User ${username} is not allowed to alter order of ${taskId} or ${prevId}`)
