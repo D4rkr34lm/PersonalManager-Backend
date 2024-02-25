@@ -1,6 +1,13 @@
 import type pg from 'pg'
 
 async function validateTaskOwnership (username: string, taskId: string, client: pg.PoolClient): Promise<boolean> {
+  const rootTaskQuery = `SELECT owner FROM containers WHERE uuid='${taskId}'`
+  const rootRes = await client.query(rootTaskQuery)
+
+  if (rootRes.rowCount! > 0 && rootRes.rows[0].owner === username) {
+    return true
+  }
+
   const taskQuery = `SELECT parent FROM tasks WHERE uuid='${taskId}'`
   const res1 = await client.query(taskQuery)
 

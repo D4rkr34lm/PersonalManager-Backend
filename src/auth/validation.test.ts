@@ -22,6 +22,12 @@ beforeAll(async () => {
   client.release()
 })
 
+test('Validation: root task', async () => {
+  const client = await pool.connect()
+  await expect(validateTaskOwnership('test', mockContainer[0][0], client)).resolves.toEqual(true)
+  client.release()
+})
+
 test('Validation: unowned task', async () => {
   const client = await pool.connect()
   await expect(validateTaskOwnership('test', '0-0-0-0-0', client)).resolves.toEqual(false)
