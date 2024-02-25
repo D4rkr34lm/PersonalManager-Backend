@@ -61,8 +61,8 @@ app.post('/login', async (req, res) => {
 
     try {
       const token = await handleLogin(
-        password,
         username,
+        password,
         client
       )
       client.release()
