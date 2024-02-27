@@ -5,9 +5,10 @@ import cors from 'cors'
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 
 import handleLogin from './auth/login'
-import getData from './data/dataGetters'
+import getData, { type Task } from './data/dataGetters'
 import { validateTaskOwnership, validateContainerOwnership } from './auth/validation'
 import { updateTaskOrder, updateTaskOwnership } from './data/dataManipulators'
+import { createContainer, createTask } from './data/dataCreators'
 
 env.config({ path: '.env' })
 
@@ -142,6 +143,48 @@ app.post('/data/alter/task/ownership', async (req, res) => {
 
   await updateTaskOwnership(taskId, containerId, client)
   client.release()
+})
+
+app.post('/data/create/task', async (req, res) => {
+  const username = res.locals.username as string
+  const client = await pool.connect()
+
+  const task = req.body.task as Task | undefined
+  const containerId = req.body.containerId as string | undefined
+  const prevId = req.body.prevId as string | undefined
+
+  if (task === undefined || containerId === undefined || prevId === undefined) {
+    console.log('[ERR] Faulty task creation request')
+    res.status(400).end()
+    return
+  }
+
+  const containerOwnership = await validateContainerOwnership(username, containerId, client)
+  const prevOwnership = await validateTaskOwnership(username, prevId, client)
+
+  if (!containerOwnership || !prevOwnership) {
+    console.log(`[ERR] User ${username} does not own Task:${prevId} or Container:${containerId}`)
+    res.status(403).end()
+    return
+  }
+
+  await createTask(task, containerId, prevId, client)
+  client.release()
+})
+
+app.post('/data/create/container', async (req, res) => {
+  const username = res.locals.username as string
+  const client = await pool.connect()
+
+  const containerId = req.body.containerId as string | undefined
+
+  if (containerId === undefined) {
+    console.log('[ERR] Faulty container creation request')
+    res.status(400).end()
+    return
+  }
+
+  await createContainer(containerId, username, client)
 })
 
 app.listen(9001, () => { console.log('[INF] Server started, listening to port 9001') }
